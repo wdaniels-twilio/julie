@@ -43,6 +43,45 @@ services:
       KAFKA_OPTS: '-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf'
       KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=DEBUG"
 
+  kafka-connect-cp:
+    image: confluentinc/cp-kafka-connect:5.3.1
+    container_name: kafka-connect
+    depends_on:
+      - zookeeper
+      - kafka
+    ports:
+      - 18083:18083
+    volumes:
+      - ./connect/secrets:/etc/kafka-connect/secrets
+      - ./connect:/etc/kafka-connect
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:29093"
+      CONNECT_REST_PORT: 18083
+      CONNECT_GROUP_ID: kafka-connect-cp
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-kafka-connect-cp-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-kafka-connect-cp-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: docker-kafka-connect-cp-status
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect-cp"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_PLUGIN_PATH: '/usr/share/java'
+      CONNECT_LISTENERS: 'http://0.0.0.0:18083'
+      CONNECT_SASL_MECHANISM: PLAIN
+      CONNECT_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      CONNECT_SASL_JAAS_CONFIG:  |
+              org.apache.kafka.common.security.plain.PlainLoginModule required \
+              username="kafka" \
+              password="kafka";
+
   control-center:
     image: confluentinc/cp-enterprise-control-center:5.3.1
     container_name: control-center
