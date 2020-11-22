@@ -4,6 +4,7 @@ import static com.purbon.kafka.topology.api.mds.RequestScope.RESOURCE_NAME;
 import static com.purbon.kafka.topology.api.mds.RequestScope.RESOURCE_PATTERN_TYPE;
 import static com.purbon.kafka.topology.api.mds.RequestScope.RESOURCE_TYPE;
 
+import com.purbon.kafka.topology.api.HttpClient;
 import com.purbon.kafka.topology.api.mds.http.HttpDeleteWithBody;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
 import com.purbon.kafka.topology.roles.rbac.ClusterLevelRoleBuilder;
@@ -13,14 +14,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.kafka.common.resource.ResourceType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,12 +28,14 @@ public class MDSApiClient {
   private final String mdsServer;
   private String basicCredentials;
 
+  private HttpClient httpClient;
   private AuthenticationCredentials authenticationCredentials;
   private ClusterIDs clusterIDs;
 
   public MDSApiClient(String mdsServer) {
     this.mdsServer = mdsServer;
     this.clusterIDs = new ClusterIDs();
+    this.httpClient = new HttpClient();
   }
 
   public void login(String user, String password) {
@@ -57,7 +55,7 @@ public class MDSApiClient {
     Response response;
 
     try {
-      response = get(request);
+      response = httpClient.get(request);
       if (response.getStatus() < 200 || response.getStatus() > 204) {
         throw new IOException("MDS Authentication error: " + response.getResponseAsString());
       }
@@ -119,7 +117,7 @@ public class MDSApiClient {
       }
       postRequest.setEntity(new StringEntity(jsonEntity));
       LOGGER.debug("bind.entity: " + jsonEntity);
-      post(postRequest);
+      httpClient.post(postRequest);
     } catch (IOException e) {
       LOGGER.error(e);
       throw e;
@@ -174,7 +172,7 @@ public class MDSApiClient {
     try {
       request.setEntity(new StringEntity(scope.asJson()));
       LOGGER.debug("bind.entity: " + scope.asJson());
-      delete(request);
+      httpClient.delete(request);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -195,7 +193,7 @@ public class MDSApiClient {
 
     try {
       postRequest.setEntity(new StringEntity(JSON.asString(clusters)));
-      String stringResponse = post(postRequest);
+      String stringResponse = httpClient.post(postRequest);
       if (!stringResponse.isEmpty()) {
         roles = JSON.toArray(stringResponse);
       }
@@ -204,57 +202,6 @@ public class MDSApiClient {
     }
 
     return roles;
-  }
-
-  private final CloseableHttpClient httpClient = HttpClients.createDefault();
-
-  private Response get(HttpGet request) throws IOException {
-    LOGGER.debug("GET.request: " + request);
-    try (CloseableHttpResponse response = httpClient.execute(request)) {
-      LOGGER.debug("GET.response: " + response);
-      return new Response(response);
-    }
-  }
-
-  private String post(HttpPost request) throws IOException {
-    LOGGER.debug("POST.request: " + request);
-
-    try (CloseableHttpResponse response = httpClient.execute(request)) {
-      LOGGER.debug("POST.response: " + response);
-      HttpEntity entity = response.getEntity();
-      int statusCode = response.getStatusLine().getStatusCode();
-      if (statusCode < 200 || statusCode > 299) {
-        throw new IOException(
-            "Something happened with the connection, response status code: "
-                + statusCode
-                + " "
-                + request);
-      }
-      String result = "";
-      if (entity != null) {
-        result = EntityUtils.toString(entity);
-      }
-      return result;
-    } catch (IOException ex) {
-      LOGGER.error(ex);
-      throw ex;
-    }
-  }
-
-  private String delete(HttpDeleteWithBody request) throws IOException {
-    LOGGER.debug("DELETE.request: " + request);
-
-    try (CloseableHttpResponse response = httpClient.execute(request)) {
-      LOGGER.debug("DELETE.response: " + response);
-      HttpEntity entity = response.getEntity();
-      // Header headers = entity.getContentType();
-      String result = "";
-      if (entity != null) {
-        result = EntityUtils.toString(entity);
-      }
-
-      return result;
-    }
   }
 
   public void setKafkaClusterId(String clusterId) {
