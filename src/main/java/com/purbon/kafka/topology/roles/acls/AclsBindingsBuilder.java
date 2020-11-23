@@ -5,9 +5,9 @@ import static java.util.Arrays.asList;
 import com.purbon.kafka.topology.BindingsBuilderProvider;
 import com.purbon.kafka.topology.TopologyBuilderConfig;
 import com.purbon.kafka.topology.api.adminclient.AclBuilder;
-import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistryInstance;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
 import java.util.ArrayList;
@@ -33,7 +33,8 @@ public class AclsBindingsBuilder implements BindingsBuilderProvider {
   }
 
   @Override
-  public List<TopologyAclBinding> buildBindingsForConnect(Connector connector, String topicPrefix) {
+  public List<TopologyAclBinding> buildBindingsForConnect(
+      ConnectorAccount connector, String topicPrefix) {
 
     String principal = connector.getPrincipal();
     List<String> readTopics = connector.getTopics().get("read");

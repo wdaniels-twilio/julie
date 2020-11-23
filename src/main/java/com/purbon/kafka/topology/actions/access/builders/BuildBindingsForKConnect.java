@@ -2,19 +2,19 @@ package com.purbon.kafka.topology.actions.access.builders;
 
 import com.purbon.kafka.topology.BindingsBuilderProvider;
 import com.purbon.kafka.topology.actions.BaseAccessControlAction;
-import com.purbon.kafka.topology.model.users.Connector;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class BuildBindingsForKConnect extends BaseAccessControlAction {
 
-  private final Connector app;
+  private final ConnectorAccount app;
   private final String topicPrefix;
   private final BindingsBuilderProvider controlProvider;
 
   public BuildBindingsForKConnect(
-      BindingsBuilderProvider controlProvider, Connector app, String topicPrefix) {
+      BindingsBuilderProvider controlProvider, ConnectorAccount app, String topicPrefix) {
     super();
     this.app = app;
     this.topicPrefix = topicPrefix;

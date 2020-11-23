@@ -3,6 +3,7 @@ package com.purbon.kafka.topology;
 import static com.purbon.kafka.topology.BuilderCLI.BROKERS_OPTION;
 import static com.purbon.kafka.topology.TopologyBuilderConfig.OPTIMIZED_ACLS_CONFIG;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -30,6 +31,7 @@ import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.ControlCenter;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.Kafka;
@@ -45,7 +47,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -153,7 +154,7 @@ public class AccessControlManagerTest {
     Consumer projectConsumer = new Consumer("project-consumer");
     Consumer topicConsumer = new Consumer("topic-consumer");
 
-    List<Consumer> projectConsumers = Collections.singletonList(projectConsumer);
+    List<Consumer> projectConsumers = singletonList(projectConsumer);
 
     Topology topology = new TopologyImpl();
     topology.setContext("testConsumerAclsAtTopicLevel");
@@ -243,7 +244,7 @@ public class AccessControlManagerTest {
     Producer projectProducer = new Producer("project-producer");
     Producer topicProducer = new Producer("topic-producer");
 
-    List<Producer> projectProducers = Collections.singletonList(projectProducer);
+    List<Producer> projectProducers = singletonList(projectProducer);
 
     Topology topology = new TopologyImpl();
     topology.setContext("testProducerAclsAtTopicLevel");
@@ -286,7 +287,7 @@ public class AccessControlManagerTest {
     topics.put(KStream.READ_TOPICS, asList("topicA", "topicB"));
     topics.put(KStream.WRITE_TOPICS, asList("topicC", "topicD"));
     app.setTopics(topics);
-    project.setStreams(Collections.singletonList(app));
+    project.setStreams(singletonList(app));
 
     Topology topology = new TopologyImpl();
     topology.addProject(project);
@@ -320,11 +321,11 @@ public class AccessControlManagerTest {
 
     SchemaRegistryInstance instance = new SchemaRegistryInstance();
     instance.setPrincipal("User:foo");
-    sr.setInstances(Collections.singletonList(instance));
+    sr.setInstances(singletonList(instance));
 
     Map<String, List<User>> rbac = new HashMap<>();
-    rbac.put("SecurityAdmin", Collections.singletonList(new User("User:foo")));
-    rbac.put("ClusterAdmin", Collections.singletonList(new User("User:bar")));
+    rbac.put("SecurityAdmin", singletonList(new User("User:foo")));
+    rbac.put("ClusterAdmin", singletonList(new User("User:bar")));
     sr.setRbac(Optional.of(rbac));
 
     platform.setSchemaRegistry(sr);
@@ -359,7 +360,7 @@ public class AccessControlManagerTest {
     ControlCenterInstance instance = new ControlCenterInstance();
     instance.setPrincipal("User:foo");
     instance.setAppId("appid");
-    c3.setInstances(Collections.singletonList(instance));
+    c3.setInstances(singletonList(instance));
     platform.setControlCenter(c3);
     topology.setPlatform(platform);
 
@@ -381,8 +382,8 @@ public class AccessControlManagerTest {
     Platform platform = new Platform();
     Kafka kafka = new Kafka();
     Map<String, List<User>> rbac = new HashMap<>();
-    rbac.put("Operator", Collections.singletonList(new User("User:foo")));
-    rbac.put("ClusterAdmin", Collections.singletonList(new User("User:bar")));
+    rbac.put("Operator", singletonList(new User("User:foo")));
+    rbac.put("ClusterAdmin", singletonList(new User("User:bar")));
     kafka.setRbac(Optional.of(rbac));
     platform.setKafka(kafka);
     topology.setPlatform(platform);
@@ -406,8 +407,8 @@ public class AccessControlManagerTest {
     Platform platform = new Platform();
     KafkaConnect connect = new KafkaConnect();
     Map<String, List<User>> rbac = new HashMap<>();
-    rbac.put("Operator", Collections.singletonList(new User("User:foo")));
-    rbac.put("ClusterAdmin", Collections.singletonList(new User("User:bar")));
+    rbac.put("Operator", singletonList(new User("User:foo")));
+    rbac.put("ClusterAdmin", singletonList(new User("User:bar")));
     connect.setRbac(Optional.of(rbac));
     platform.setKafkaConnect(connect);
     topology.setPlatform(platform);
@@ -425,17 +426,17 @@ public class AccessControlManagerTest {
   }
 
   @Test
-  public void newKafkaConnectACLsCreation() throws IOException {
+  public void newKafkaConnectACLsCreation() {
 
     Project project = new ProjectImpl();
 
-    Connector connector1 = new Connector();
-    connector1.setPrincipal("User:Connect1");
+    ConnectorAccount connectorAccount = new ConnectorAccount();
+    connectorAccount.setPrincipal("User:Connect1");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(Connector.READ_TOPICS, asList("topicA", "topicB"));
-    connector1.setTopics(topics);
+    topics.put(ConnectorAccount.READ_TOPICS, asList("topicA", "topicB"));
+    connectorAccount.setTopics(topics);
 
-    project.setConnectors(asList(connector1));
+    project.setConnectors(new Connector(asList(connectorAccount)));
 
     Topology topology = new TopologyImpl();
     topology.addProject(project);
@@ -444,9 +445,10 @@ public class AccessControlManagerTest {
 
     doReturn(new ArrayList<TopologyAclBinding>())
         .when(aclsBuilder)
-        .buildBindingsForConnect(connector1, project.namePrefix());
+        .buildBindingsForConnect(connectorAccount, project.namePrefix());
 
-    verify(aclsBuilder, times(1)).buildBindingsForConnect(eq(connector1), eq(project.namePrefix()));
+    verify(aclsBuilder, times(1))
+        .buildBindingsForConnect(eq(connectorAccount), eq(project.namePrefix()));
   }
 
   @Test
@@ -468,7 +470,7 @@ public class AccessControlManagerTest {
 
     List<Consumer> users = asList(new Consumer("User:app1"));
 
-    doReturn(Collections.singletonList(new TopologyAclBinding()))
+    doReturn(singletonList(new TopologyAclBinding()))
         .when(aclsBuilder)
         .buildBindingsForConsumers(users, topicA.toString(), false);
 

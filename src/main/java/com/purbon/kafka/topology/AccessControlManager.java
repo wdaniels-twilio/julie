@@ -15,11 +15,11 @@ import com.purbon.kafka.topology.model.Platform;
 import com.purbon.kafka.topology.model.Project;
 import com.purbon.kafka.topology.model.Topology;
 import com.purbon.kafka.topology.model.User;
-import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
 import com.purbon.kafka.topology.model.users.Schemas;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistryInstance;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
@@ -91,7 +91,7 @@ public class AccessControlManager {
       for (KStream app : project.getStreams()) {
         syncApplicationAcls(app, topicPrefix).ifPresent(actions::add);
       }
-      for (Connector connector : project.getConnectors()) {
+      for (ConnectorAccount connector : project.getConnectors().getAccounts()) {
         syncApplicationAcls(connector, topicPrefix).ifPresent(actions::add);
         connector
             .getConnectors()
@@ -260,8 +260,8 @@ public class AccessControlManager {
     Action action = null;
     if (app instanceof KStream) {
       action = new BuildBindingsForKStreams(bindingsBuilder, (KStream) app, topicPrefix);
-    } else if (app instanceof Connector) {
-      action = new BuildBindingsForKConnect(bindingsBuilder, (Connector) app, topicPrefix);
+    } else if (app instanceof ConnectorAccount) {
+      action = new BuildBindingsForKConnect(bindingsBuilder, (ConnectorAccount) app, topicPrefix);
     }
     return Optional.ofNullable(action);
   }

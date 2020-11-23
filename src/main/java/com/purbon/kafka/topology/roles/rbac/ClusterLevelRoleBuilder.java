@@ -4,7 +4,7 @@ import static com.purbon.kafka.topology.api.mds.ClusterIDs.CONNECT_CLUSTER_ID_LA
 
 import com.purbon.kafka.topology.api.mds.MDSApiClient;
 import com.purbon.kafka.topology.api.mds.RequestScope;
-import com.purbon.kafka.topology.model.users.Connector;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
 import java.util.Map;
 import java.util.Optional;
@@ -100,7 +100,7 @@ public class ClusterLevelRoleBuilder {
     return this;
   }
 
-  public ClusterLevelRoleBuilder forKafkaConnect(Connector connector) {
+  public ClusterLevelRoleBuilder forKafkaConnect(ConnectorAccount connector) {
     Map<String, Map<String, String>> clusters =
         client.withClusterIDs().forKafkaConnect().forKafka().asMap();
 

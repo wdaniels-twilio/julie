@@ -3,10 +3,10 @@ package com.purbon.kafka.topology;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.purbon.kafka.topology.api.adminclient.AclBuilder;
-import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
 import com.purbon.kafka.topology.roles.acls.AclsBindingsBuilder;
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class AclsBindingsBuilderTest {
 
   @Test
   public void testConnectorAclsBuilder() {
-    Connector connector = new Connector("User:foo");
+    ConnectorAccount connector = new ConnectorAccount("User:foo");
 
     List<TopologyAclBinding> bindings = builder.buildBindingsForConnect(connector, "prefix");
     assertThat(bindings.size()).isEqualTo(8);

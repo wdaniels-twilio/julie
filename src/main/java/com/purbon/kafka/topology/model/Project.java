@@ -29,9 +29,9 @@ public interface Project {
 
   void setStreams(List<KStream> streams);
 
-  List<Connector> getConnectors();
+  Connector getConnectors();
 
-  void setConnectors(List<Connector> connectors);
+  void setConnectors(Connector connectors);
 
   List<Schemas> getSchemas();
 

@@ -25,7 +25,7 @@ public class ProjectImpl implements Project, Cloneable {
   private List<Consumer> consumers;
   private List<Producer> producers;
   private List<KStream> streams;
-  private List<Connector> connectors;
+  private Connector connectors;
   private List<Schemas> schemas;
   private Map<String, List<String>> rbacRawRoles;
 
@@ -50,7 +50,7 @@ public class ProjectImpl implements Project, Cloneable {
         new ArrayList<>(),
         new ArrayList<>(),
         new ArrayList<>(),
-        new ArrayList<>(),
+        new Connector(),
         new ArrayList<>(),
         new HashMap<>(),
         config);
@@ -61,7 +61,7 @@ public class ProjectImpl implements Project, Cloneable {
       List<Consumer> consumers,
       List<Producer> producers,
       List<KStream> streams,
-      List<Connector> connectors,
+      Connector connectors,
       List<Schemas> schemas,
       Map<String, List<String>> rbacRawRoles,
       TopologyBuilderConfig config) {
@@ -85,7 +85,7 @@ public class ProjectImpl implements Project, Cloneable {
       List<Producer> producers,
       List<KStream> streams,
       List<String> zookeepers,
-      List<Connector> connectors,
+      Connector connectors,
       List<Schemas> schemas,
       Map<String, List<String>> rbacRawRoles,
       TopologyBuilderConfig config) {
@@ -135,11 +135,11 @@ public class ProjectImpl implements Project, Cloneable {
     this.streams = streams;
   }
 
-  public List<Connector> getConnectors() {
+  public Connector getConnectors() {
     return connectors;
   }
 
-  public void setConnectors(List<Connector> connectors) {
+  public void setConnectors(Connector connectors) {
     this.connectors = connectors;
   }
 
@@ -169,9 +169,7 @@ public class ProjectImpl implements Project, Cloneable {
   }
 
   private String namePrefix(String topologyPrefix) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(topologyPrefix).append(config.getTopicPrefixSeparator()).append(name);
-    return sb.toString();
+    return topologyPrefix + config.getTopicPrefixSeparator() + name;
   }
 
   private String buildNamePrefix() {

@@ -1,5 +1,6 @@
 package com.purbon.kafka.topology.integration;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +20,7 @@ import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.ControlCenter;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistry;
@@ -30,7 +32,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -268,8 +269,8 @@ public class AccessControlManagerIT {
     KStream app = new KStream();
     app.setPrincipal("User:App0");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(KStream.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    topics.put(KStream.WRITE_TOPICS, Arrays.asList("topicC", "topicD"));
+    topics.put(KStream.READ_TOPICS, asList("topicA", "topicB"));
+    topics.put(KStream.WRITE_TOPICS, asList("topicC", "topicD"));
     app.setTopics(topics);
     project.setStreams(Collections.singletonList(app));
 
@@ -302,7 +303,7 @@ public class AccessControlManagerIT {
     SchemaRegistryInstance instance2 = new SchemaRegistryInstance();
     instance2.setPrincipal("User:banana");
 
-    sr.setInstances(Arrays.asList(instance, instance2));
+    sr.setInstances(asList(instance, instance2));
     platform.setSchemaRegistry(sr);
 
     topology.setPlatform(platform);
@@ -348,12 +349,13 @@ public class AccessControlManagerIT {
   public void connectAclsCreation() throws ExecutionException, InterruptedException, IOException {
     Project project = new ProjectImpl();
 
-    Connector connector = new Connector();
-    connector.setPrincipal("User:Connect");
+    ConnectorAccount connectorAccount = new ConnectorAccount();
+    connectorAccount.setPrincipal("User:Connect");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(KStream.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    connector.setTopics(topics);
-    project.setConnectors(Collections.singletonList(connector));
+    topics.put(KStream.READ_TOPICS, asList("topicA", "topicB"));
+    connectorAccount.setTopics(topics);
+    Connector connector = new Connector(asList(connectorAccount));
+    project.setConnectors(connector);
 
     Topology topology = new TopologyImpl();
     topology.setContext("integration-test");
@@ -363,7 +365,7 @@ public class AccessControlManagerIT {
     accessControlManager.apply(topology, plan);
     plan.run();
 
-    verifyConnectAcls(connector);
+    verifyConnectAcls(connectorAccount);
   }
 
   private void verifyAclsOfSize(int size) throws ExecutionException, InterruptedException {
@@ -374,7 +376,7 @@ public class AccessControlManagerIT {
     assertEquals(size, acls.size());
   }
 
-  private void verifyConnectAcls(Connector connector)
+  private void verifyConnectAcls(ConnectorAccount connector)
       throws ExecutionException, InterruptedException {
 
     ResourcePatternFilter resourceFilter =

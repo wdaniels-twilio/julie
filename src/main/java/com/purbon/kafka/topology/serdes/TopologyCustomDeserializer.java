@@ -24,6 +24,8 @@ import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
 import com.purbon.kafka.topology.model.users.Schemas;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
+import com.purbon.kafka.topology.model.users.connector.ConnectorEntity;
 import com.purbon.kafka.topology.model.users.platform.ControlCenter;
 import com.purbon.kafka.topology.model.users.platform.Kafka;
 import com.purbon.kafka.topology.model.users.platform.KafkaConnect;
@@ -150,8 +152,7 @@ public class TopologyCustomDeserializer extends StdDeserializer<Topology> {
       throws IOException {
 
     List<String> keys =
-        Arrays.asList(
-            CONSUMERS_KEY, PROJECTS_KEY, PRODUCERS_KEY, CONNECTORS_KEY, STREAMS_KEY, SCHEMAS_KEY);
+        Arrays.asList(CONSUMERS_KEY, PROJECTS_KEY, PRODUCERS_KEY, STREAMS_KEY, SCHEMAS_KEY);
 
     Map<String, JsonNode> rootNodes = Maps.asMap(new HashSet<>(keys), (key) -> rootNode.get(key));
 
@@ -171,11 +172,6 @@ public class TopologyCustomDeserializer extends StdDeserializer<Topology> {
                 new JsonSerdesUtils<Producer>()
                     .parseApplicationUser(parser, keyNode, Producer.class);
             break;
-          case CONNECTORS_KEY:
-            objs =
-                new JsonSerdesUtils<Connector>()
-                    .parseApplicationUser(parser, keyNode, Connector.class);
-            break;
           case STREAMS_KEY:
             objs =
                 new JsonSerdesUtils<KStream>().parseApplicationUser(parser, keyNode, KStream.class);
@@ -188,6 +184,30 @@ public class TopologyCustomDeserializer extends StdDeserializer<Topology> {
         mapOfValues.put(key, objs);
       }
     }
+    JsonNode connectNode = rootNode.get(CONNECTORS_KEY);
+    List<ConnectorAccount> accounts = new ArrayList<>();
+    List<ConnectorEntity> entities = new ArrayList<>();
+
+    if (connectNode != null) {
+      if (containsEntities(connectNode)) {
+        if (connectNode.has("entities")) {
+          JsonNode entitiesNode = connectNode.get("entities");
+          entities =
+              new JsonSerdesUtils<ConnectorEntity>()
+                  .parseApplicationUser(parser, entitiesNode, ConnectorEntity.class);
+        }
+        if (connectNode.has("accounts")) {
+          JsonNode accountsNode = connectNode.get("accounts");
+          accounts =
+              new JsonSerdesUtils<ConnectorAccount>()
+                  .parseApplicationUser(parser, accountsNode, ConnectorAccount.class);
+        }
+      } else {
+        accounts =
+            new JsonSerdesUtils<ConnectorAccount>()
+                .parseApplicationUser(parser, connectNode, ConnectorAccount.class);
+      }
+    }
 
     ProjectImpl project =
         new ProjectImpl(
@@ -195,7 +215,7 @@ public class TopologyCustomDeserializer extends StdDeserializer<Topology> {
             (List<Consumer>) mapOfValues.getOrDefault(CONSUMERS_KEY, new ArrayList<>()),
             (List<Producer>) mapOfValues.getOrDefault(PRODUCERS_KEY, new ArrayList<>()),
             (List<KStream>) mapOfValues.getOrDefault(STREAMS_KEY, new ArrayList<>()),
-            (List<Connector>) mapOfValues.getOrDefault(CONNECTORS_KEY, new ArrayList<>()),
+            new Connector(accounts, entities),
             (List<Schemas>) mapOfValues.getOrDefault(SCHEMAS_KEY, new ArrayList<>()),
             parseOptionalRbacRoles(rootNode.get(RBAC_KEY)),
             config);
@@ -207,6 +227,10 @@ public class TopologyCustomDeserializer extends StdDeserializer<Topology> {
         .forEach(project::addTopic);
 
     return project;
+  }
+
+  private boolean containsEntities(JsonNode node) {
+    return node.has("accounts") || node.has("entities");
   }
 
   private Map<String, List<String>> parseOptionalRbacRoles(JsonNode rbacRootNode) {

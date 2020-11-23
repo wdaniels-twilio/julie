@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.purbon.kafka.topology.api.mds.ClusterIDs;
 import com.purbon.kafka.topology.api.mds.MDSApiClient;
-import com.purbon.kafka.topology.model.users.Connector;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.roles.rbac.ClusterLevelRoleBuilder;
 import java.io.IOException;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class ClusterLevelRoleBuilderTest {
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-  private Connector connector;
+  private ConnectorAccount connector;
 
   private static ClusterIDs allClusterIDs;
   private static ClusterIDs nonClusterIDs;
@@ -46,7 +46,7 @@ public class ClusterLevelRoleBuilderTest {
 
   @Before
   public void before() {
-    connector = new Connector();
+    connector = new ConnectorAccount();
   }
 
   @Test

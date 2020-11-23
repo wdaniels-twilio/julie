@@ -1,5 +1,6 @@
 package com.purbon.kafka.topology;
 
+import static java.util.Arrays.asList;
 import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -19,6 +20,7 @@ import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.ControlCenter;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistry;
@@ -27,7 +29,6 @@ import com.purbon.kafka.topology.roles.SimpleAclsProvider;
 import com.purbon.kafka.topology.roles.acls.AclsBindingsBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -133,8 +134,8 @@ public class TopologyBuilderAdminClientTest {
     KStream app = new KStream();
     app.setPrincipal("User:App0");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(KStream.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    topics.put(KStream.WRITE_TOPICS, Arrays.asList("topicC", "topicD"));
+    topics.put(KStream.READ_TOPICS, asList("topicA", "topicB"));
+    topics.put(KStream.WRITE_TOPICS, asList("topicC", "topicD"));
     app.setTopics(topics);
     project.setStreams(Collections.singletonList(app));
 
@@ -202,13 +203,13 @@ public class TopologyBuilderAdminClientTest {
 
     Project project = new ProjectImpl();
 
-    Connector connector1 = new Connector();
-    connector1.setPrincipal("User:Connect1");
+    ConnectorAccount connectorAccount = new ConnectorAccount();
+    connectorAccount.setPrincipal("User:Connect1");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(Connector.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    connector1.setTopics(topics);
-
-    project.setConnectors(Arrays.asList(connector1));
+    topics.put(ConnectorAccount.READ_TOPICS, asList("topicA", "topicB"));
+    connectorAccount.setTopics(topics);
+    Connector connector = new Connector(asList(connectorAccount));
+    project.setConnectors(connector);
 
     Topology topology = new TopologyImpl();
     topology.addProject(project);

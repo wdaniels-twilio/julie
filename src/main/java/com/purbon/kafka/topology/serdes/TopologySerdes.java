@@ -66,6 +66,7 @@ public class TopologySerdes {
       SimpleModule module = new SimpleModule();
       module.addDeserializer(Topology.class, new TopologyCustomDeserializer(config));
       module.addDeserializer(TopicImpl.class, new TopicCustomDeserializer(config, plans));
+
       mapper.registerModule(module);
       mapper.registerModule(new Jdk8Module());
       mapper.findAndRegisterModules();

@@ -5,6 +5,7 @@ import static com.purbon.kafka.topology.roles.rbac.RBACPredefinedRoles.DEVELOPER
 import static com.purbon.kafka.topology.roles.rbac.RBACPredefinedRoles.RESOURCE_OWNER;
 import static com.purbon.kafka.topology.roles.rbac.RBACPredefinedRoles.SECURITY_ADMIN;
 import static com.purbon.kafka.topology.roles.rbac.RBACPredefinedRoles.SYSTEM_ADMIN;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyList;
@@ -27,6 +28,7 @@ import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.ControlCenter;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.Kafka;
@@ -37,7 +39,6 @@ import com.purbon.kafka.topology.roles.RBACProvider;
 import com.purbon.kafka.topology.roles.rbac.RBACBindingsBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -133,8 +134,8 @@ public class RBACPRoviderRbacIT extends MDSBaseTest {
     KStream app = new KStream();
     app.setPrincipal("User:App3");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(KStream.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    topics.put(KStream.WRITE_TOPICS, Arrays.asList("topicC", "topicD"));
+    topics.put(KStream.READ_TOPICS, asList("topicA", "topicB"));
+    topics.put(KStream.WRITE_TOPICS, asList("topicC", "topicD"));
     app.setTopics(topics);
     project.setStreams(Collections.singletonList(app));
 
@@ -154,12 +155,14 @@ public class RBACPRoviderRbacIT extends MDSBaseTest {
   public void connectAclsCreation() throws IOException {
     Project project = new ProjectImpl();
 
-    Connector connector = new Connector();
-    connector.setPrincipal("User:Connect");
+    ConnectorAccount connectorAccount = new ConnectorAccount();
+    connectorAccount.setPrincipal("User:Connect");
     HashMap<String, List<String>> topics = new HashMap<>();
-    topics.put(KStream.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    connector.setTopics(topics);
-    project.setConnectors(Collections.singletonList(connector));
+    topics.put(KStream.READ_TOPICS, asList("topicA", "topicB"));
+    connectorAccount.setTopics(topics);
+
+    Connector connector = new Connector(asList(connectorAccount));
+    project.setConnectors(connector);
 
     Topology topology = new TopologyImpl();
     topology.setContext("connectAclsCreation-test");
@@ -170,7 +173,7 @@ public class RBACPRoviderRbacIT extends MDSBaseTest {
 
     verify(cs, times(1)).add(anyList());
     verify(cs, times(1)).flushAndClose();
-    verifyConnectAcls(connector);
+    verifyConnectAcls(connectorAccount);
   }
 
   @Test
@@ -189,7 +192,7 @@ public class RBACPRoviderRbacIT extends MDSBaseTest {
     SchemaRegistryInstance instance2 = new SchemaRegistryInstance();
     instance2.setPrincipal("User:banana");
 
-    sr.setInstances(Arrays.asList(instance, instance2));
+    sr.setInstances(asList(instance, instance2));
 
     Map<String, List<User>> rbac = new HashMap<>();
     rbac.put("SecurityAdmin", Collections.singletonList(new User("User:foo")));
@@ -331,7 +334,7 @@ public class RBACPRoviderRbacIT extends MDSBaseTest {
     }
   }
 
-  private void verifyConnectAcls(Connector app) {
+  private void verifyConnectAcls(ConnectorAccount app) {
     List<String> roles = apiClient.lookupRoles(app.getPrincipal());
     assertTrue(roles.contains(DEVELOPER_READ));
     assertTrue(roles.contains(RESOURCE_OWNER));

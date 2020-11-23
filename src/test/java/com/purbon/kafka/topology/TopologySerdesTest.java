@@ -19,6 +19,7 @@ import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistryInstance;
 import com.purbon.kafka.topology.serdes.TopologySerdes;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -107,18 +109,19 @@ public class TopologySerdesTest {
     kstreamApp.setTopics(topics);
     project.setStreams(Collections.singletonList(kstreamApp));
 
-    Connector connector1 = new Connector();
-    connector1.setPrincipal("Connect1");
+    ConnectorAccount connectorAccount1 = new ConnectorAccount();
+    connectorAccount1.setPrincipal("Connect1");
     HashMap<String, List<String>> topics1 = new HashMap<>();
     topics1.put(KStream.READ_TOPICS, Arrays.asList("topicA", "topicB"));
-    connector1.setTopics(topics1);
+    connectorAccount1.setTopics(topics1);
 
-    Connector connector2 = new Connector();
-    connector2.setPrincipal("Connect2");
+    ConnectorAccount connectorAccount2 = new ConnectorAccount();
+    connectorAccount2.setPrincipal("Connect2");
     HashMap<String, List<String>> topics2 = new HashMap<>();
     topics2.put(KStream.WRITE_TOPICS, Arrays.asList("topicC", "topicD"));
-    connector2.setTopics(topics2);
-    project.setConnectors(Arrays.asList(connector1, connector2));
+    connectorAccount2.setTopics(topics2);
+    Connector connector = new Connector(Arrays.asList(connectorAccount1, connectorAccount2));
+    project.setConnectors(connector);
 
     Consumer consumer0 = new Consumer("app0");
     Consumer consumer1 = new Consumer("app1");
@@ -194,11 +197,22 @@ public class TopologySerdesTest {
     assertThat(project.getProducers()).hasSize(3);
     assertThat(project.getConsumers()).hasSize(2);
     assertThat(project.getStreams()).hasSize(1);
-    assertThat(project.getConnectors()).hasSize(2);
+    assertThat(project.getConnectors().getAccounts()).hasSize(2);
 
     assertThat(project.getProducers().get(0).getIdempotence()).isEmpty();
     assertThat(project.getProducers().get(1).getTransactionId()).isEqualTo(Optional.of("1234"));
     assertThat(project.getProducers().get(2).getIdempotence()).isNotEmpty();
+  }
+
+  @Test
+  public void testConnectorsSectionProcessing() throws IOException, URISyntaxException {
+
+    URL topologyDescriptor = getClass().getResource("/descriptor-with-connectors.yaml");
+    Topology topology = parser.deserialise(Paths.get(topologyDescriptor.toURI()).toFile());
+
+    Project project = topology.getProjects().get(0);
+    assertThat(project.getConnectors().getAccounts()).hasSize(2);
+    assertThat(project.getConnectors().getEntities()).hasSize(2);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -208,7 +222,7 @@ public class TopologySerdesTest {
   }
 
   @Test
-  public void testPlaformProcessing() throws IOException, URISyntaxException {
+  public void testPlatformProcessing() throws IOException, URISyntaxException {
 
     URL topologyDescriptor = getClass().getResource("/descriptor.yaml");
 
@@ -251,7 +265,7 @@ public class TopologySerdesTest {
 
     Project project = topology.getProjects().get(0);
     assertEquals("contextOrg", topology.getContext());
-    assertThat(project.getConnectors()).isEmpty();
+    assertThat(project.getConnectors()).is(new Condition<>(Connector::isEmpty, "empty"));
     assertThat(project.getProducers()).isEmpty();
     assertThat(project.getStreams()).isEmpty();
     assertThat(project.getZookeepers()).isEmpty();
@@ -279,7 +293,7 @@ public class TopologySerdesTest {
     assertEquals("User:App0", myProject.getSchemas().get(0).getPrincipal());
     assertEquals(1, myProject.getSchemas().get(0).getSubjects().size());
 
-    Connector connector = myProject.getConnectors().get(0);
+    ConnectorAccount connector = myProject.getConnectors().getAccounts().get(0);
     assertEquals(true, connector.getConnectors().isPresent());
     assertEquals("jdbc-sync", connector.getConnectors().get().get(0));
     assertEquals("ibmmq-source", connector.getConnectors().get().get(1));

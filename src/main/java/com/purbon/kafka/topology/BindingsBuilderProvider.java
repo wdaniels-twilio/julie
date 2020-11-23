@@ -2,9 +2,9 @@ package com.purbon.kafka.topology;
 
 import com.purbon.kafka.topology.exceptions.ConfigurationException;
 import com.purbon.kafka.topology.model.Component;
-import com.purbon.kafka.topology.model.users.Connector;
 import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.Producer;
+import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistryInstance;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface BindingsBuilderProvider {
 
-  List<TopologyAclBinding> buildBindingsForConnect(Connector connector, String topicPrefix);
+  List<TopologyAclBinding> buildBindingsForConnect(ConnectorAccount connector, String topicPrefix);
 
   List<TopologyAclBinding> buildBindingsForStreamsApp(
       String principal, String topicPrefix, List<String> readTopics, List<String> writeTopics);
