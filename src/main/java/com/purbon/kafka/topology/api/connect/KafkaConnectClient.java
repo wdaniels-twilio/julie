@@ -1,8 +1,10 @@
 package com.purbon.kafka.topology.api.connect;
 
-import com.purbon.kafka.topology.api.HttpClient;
+import com.purbon.kafka.topology.client.http.HttpClient;
+import com.purbon.kafka.topology.client.http.model.Response;
 import java.io.IOException;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
@@ -34,15 +36,26 @@ public class KafkaConnectClient {
   }
 
   public void deleteConnector(String connector) throws IOException {
-    HttpDelete deleteRequest = new HttpDelete(connector+ "/connectors/"+connector);
+    HttpDelete deleteRequest = new HttpDelete(connector + "/connectors/" + connector);
     try {
       httpClient.delete(deleteRequest);
     } catch (IOException e) {
-      LOGGER.error("Something happened when deleting connector "+connector, e);
+      LOGGER.error("Something happened when deleting connector " + connector, e);
       throw new IOException(e);
     }
-
   }
 
+  public String getConnector(String connector) throws IOException {
+    HttpGet request = new HttpGet(connectServer + "/connectors");
+    request.addHeader("accept", " application/json");
+    request.addHeader("Content-Type", "application/json");
 
+    try {
+      Response response = httpClient.get(request);
+      return response.getResponseAsString();
+    } catch (IOException e) {
+      LOGGER.error("Something happened when getting the connector " + connector, e);
+      throw new IOException(e);
+    }
+  }
 }

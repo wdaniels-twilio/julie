@@ -1,4 +1,4 @@
-package com.purbon.kafka.topology.api.mds.http;
+package com.purbon.kafka.topology.client.http;
 
 import java.net.URI;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;

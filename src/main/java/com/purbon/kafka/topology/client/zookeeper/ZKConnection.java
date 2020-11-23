@@ -1,4 +1,4 @@
-package com.purbon.kafka.topology.utils;
+package com.purbon.kafka.topology.client.zookeeper;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;

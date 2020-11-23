@@ -4,8 +4,9 @@ import static com.purbon.kafka.topology.api.mds.RequestScope.RESOURCE_NAME;
 import static com.purbon.kafka.topology.api.mds.RequestScope.RESOURCE_PATTERN_TYPE;
 import static com.purbon.kafka.topology.api.mds.RequestScope.RESOURCE_TYPE;
 
-import com.purbon.kafka.topology.api.HttpClient;
-import com.purbon.kafka.topology.api.mds.http.HttpDeleteWithBody;
+import com.purbon.kafka.topology.client.http.HttpClient;
+import com.purbon.kafka.topology.client.http.HttpDeleteWithBody;
+import com.purbon.kafka.topology.client.http.model.Response;
 import com.purbon.kafka.topology.roles.TopologyAclBinding;
 import com.purbon.kafka.topology.roles.rbac.ClusterLevelRoleBuilder;
 import com.purbon.kafka.topology.utils.JSON;

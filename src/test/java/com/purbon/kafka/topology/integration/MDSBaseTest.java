@@ -1,7 +1,7 @@
 package com.purbon.kafka.topology.integration;
 
+import com.purbon.kafka.topology.client.zookeeper.ZKClient;
 import com.purbon.kafka.topology.utils.JSON;
-import com.purbon.kafka.topology.utils.ZKClient;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

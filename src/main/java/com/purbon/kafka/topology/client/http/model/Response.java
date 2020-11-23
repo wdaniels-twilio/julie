@@ -1,4 +1,4 @@
-package com.purbon.kafka.topology.api.mds;
+package com.purbon.kafka.topology.client.http.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.purbon.kafka.topology.utils.JSON;

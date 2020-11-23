@@ -1,12 +1,9 @@
-package com.purbon.kafka.topology.api;
+package com.purbon.kafka.topology.client.http;
 
-import com.purbon.kafka.topology.api.connect.KafkaConnectClient;
-import com.purbon.kafka.topology.api.mds.Response;
-import com.purbon.kafka.topology.api.mds.http.HttpDeleteWithBody;
+import com.purbon.kafka.topology.client.http.model.Response;
 import java.io.IOException;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
