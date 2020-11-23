@@ -20,6 +20,7 @@ import com.purbon.kafka.topology.model.users.Consumer;
 import com.purbon.kafka.topology.model.users.KStream;
 import com.purbon.kafka.topology.model.users.Producer;
 import com.purbon.kafka.topology.model.users.connector.ConnectorAccount;
+import com.purbon.kafka.topology.model.users.connector.ConnectorEntity;
 import com.purbon.kafka.topology.model.users.platform.ControlCenterInstance;
 import com.purbon.kafka.topology.model.users.platform.SchemaRegistryInstance;
 import com.purbon.kafka.topology.serdes.TopologySerdes;
@@ -213,6 +214,7 @@ public class TopologySerdesTest {
     Project project = topology.getProjects().get(0);
     assertThat(project.getConnectors().getAccounts()).hasSize(2);
     assertThat(project.getConnectors().getEntities()).hasSize(2);
+    assertThat(project.getConnectors().getEntities()).contains(new ConnectorEntity("foo", "connectors/connector-foo.json"));
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -40,8 +40,10 @@ projects:
               - "topicC"
               - "topicD"
       entities:
-        - "connectors/connector-foo.json"
-        - "connectors/connectors-bar.json"
+        - name: "foo"
+          path: "connectors/connector-foo.json"
+        - name: "bar"
+          path: "connectors/connector-bar.json"
     topics:
       - name: "foo"
         config:
