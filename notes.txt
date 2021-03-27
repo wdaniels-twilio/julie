@@ -1,0 +1,20 @@
+
+
+docker run -t -i \
+       -v /Users/pere/work/gitops/kafka-topology-builder/example:/example \
+       -v /Users/pere/work/gitops/kafka-topology-builder/docker:/docker \
+       --network tls_default \
+       purbon/kafka-topology-builder:latest \
+       julie-ops-cli.sh  \
+       --brokers kafka.confluent.local:9093 \
+       --clientConfig /example/topology-builder-tls.properties --topology /example/descriptor.yaml
+
+
+
+ docker run -t -i \
+           -v /Users/pere/work/kafka-topology-builder/example:/example \
+           purbon/kafka-topology-builder:latest \
+           julie-ops-cli.sh \
+           --brokers pkc-4ygn6.europe-west3.gcp.confluent.cloud:9092 \
+           --clientConfig /example/topology-builder-with-schema-cloud.properties \
+           --topology /example/descriptor.yaml -quiet
