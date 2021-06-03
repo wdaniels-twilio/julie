@@ -117,6 +117,14 @@
       <id>confluent</id>
       <url>https://packages.confluent.io/maven/</url>
     </repository>
+    <repository>
+      <id>twilio.nexus</id>
+      <url>https://nexus.corp.twilio.com/content/groups/public/</url>
+      <releases>
+      </releases>
+      <snapshots>
+      </snapshots>
+    </repository>
   </repositories>
 
   <build>
@@ -437,7 +445,7 @@
     <hamcrest.version>2.2</hamcrest.version>
     <assertj.version>3.15.0</assertj.version>
     <jinjava.version>2.5.4</jinjava.version>
-    <aws.java.sdk.version>2.16.31</aws.java.sdk.version>
+    <aws.java.sdk.version>2.16.74</aws.java.sdk.version>
     <gcp.java.sdk.version>19.2.1</gcp.java.sdk.version>
     <ksqldb.version>0.17.0</ksqldb.version>
   </properties>

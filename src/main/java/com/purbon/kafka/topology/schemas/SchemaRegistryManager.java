@@ -58,6 +58,26 @@ public class SchemaRegistryManager {
     }
   }
 
+  public boolean validate(String subjectName, String schemaFile, String format){
+    try{
+      return validate(subjectName, schemaFilePath(schemaFile), format);
+    } catch( Exception e){
+      throw new SchemaRegistryManagerException("Failed to parse the schema file " + schemaFile, e);
+    }
+  }
+
+  public boolean validate(String subjectName, Path schemaFilePath, String format){
+    LOGGER.debug("Registrering subject {} with source {}", subjectName, schemaFilePath);
+    try{
+      final var schema = new String(Files.readAllBytes(schemaFilePath), StandardCharsets.UTF_8);
+      return check(subjectName, format, schema);
+    } catch (Exception e) {
+      throw new SchemaRegistryManagerException("Failed to parse the schema file " + schemaFilePath, e);
+    }
+
+
+  }
+
   public String setCompatibility(String subject, String compatibility) {
     try {
       return schemaRegistryClient.updateCompatibility(subject, compatibility);
@@ -78,12 +98,13 @@ public class SchemaRegistryManager {
     return path;
   }
 
-  protected int save(String subjectName, String schemaType, String schemaString) {
+
+
+  private ParsedSchema parseSchema(String subjectName, String schemaType, String schemaString){
     final Optional<ParsedSchema> maybeSchema =
         schemaRegistryClient.parseSchema(schemaType, schemaString, Collections.emptyList());
 
-    final ParsedSchema parsedSchema =
-        maybeSchema.orElseThrow(
+    return maybeSchema.orElseThrow(
             () -> {
               final String msg =
                   String.format(
@@ -91,7 +112,24 @@ public class SchemaRegistryManager {
                       subjectName, schemaType);
               return new SchemaRegistryManagerException(msg);
             });
+  }
 
+  protected boolean check(String subjectName, String schemaType, String schemaString) {
+    var parsedSchema = parseSchema(subjectName, schemaType, schemaString);
+    try {
+      return schemaRegistryClient.testCompatibility(subjectName, parsedSchema);
+    }catch (Exception e) {
+      final String msg =
+          String.format(
+              "Failed to validate the schema for subject '%s' of type '%s'",
+              subjectName, schemaType);
+      throw new SchemaRegistryManagerException(msg, e);
+    }
+  }
+
+  protected int save(String subjectName, String schemaType, String schemaString) {
+
+    var parsedSchema = parseSchema(subjectName, schemaType, schemaString);
     try {
       return schemaRegistryClient.register(subjectName, parsedSchema);
     } catch (Exception e) {

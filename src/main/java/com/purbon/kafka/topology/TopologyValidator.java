@@ -7,9 +7,6 @@ import com.purbon.kafka.topology.model.Topology;
 import com.purbon.kafka.topology.utils.Either;
 import com.purbon.kafka.topology.validation.TopicValidation;
 import com.purbon.kafka.topology.validation.TopologyValidation;
-import com.purbon.kafka.topology.validation.Validation;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,22 +14,20 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TopologyValidator {
+public class TopologyValidator extends AbstractValidator{
 
   private static final Logger LOGGER = LogManager.getLogger(TopologyValidator.class);
 
-  private final Configuration config;
 
-  public TopologyValidator(Configuration config) {
-    this.config = config;
+  public TopologyValidator(final Configuration config) {
+    super(config);
   }
 
   public List<String> validate(Topology topology) {
-
     Stream<Either<Boolean, ValidationException>> streamOfTopologyResults =
         validations().stream()
-            .filter(p -> p instanceof TopologyValidation)
-            .map(validation -> (TopologyValidation) validation)
+            .filter(TopologyValidation.class::isInstance)
+            .map(TopologyValidation.class::cast)
             .map(
                 validation -> {
                   try {
@@ -45,8 +40,8 @@ public class TopologyValidator {
 
     List<TopicValidation> listOfTopicValidations =
         validations().stream()
-            .filter(p -> p instanceof TopicValidation)
-            .map(validation -> (TopicValidation) validation)
+            .filter(TopicValidation.class::isInstance)
+            .map(TopicValidation.class::cast)
             .collect(Collectors.toList());
 
     Stream<Topic> streamOfTopics =
@@ -70,46 +65,9 @@ public class TopologyValidator {
 
     return Stream.concat(streamOfTopologyResults, streamOfTopicResults)
         .filter(Either::isRight)
-        .map(either -> either.getRight().get().getMessage())
+        .map(either -> either.getRight().isPresent() ? either.getRight().get().getMessage() : null)
         .collect(Collectors.toList());
   }
 
-  private List<Validation> validations() {
-    return config.getTopologyValidations().stream()
-        .map(
-            validationClass -> {
-              try {
-                Class<?> clazz = getValidationClazz(validationClass);
-                if (clazz == null) {
-                  throw new IOException(
-                      String.format(
-                          "Could not find validation class '%s' in class path. "
-                              + "Please use the fully qualified class name and check your config.",
-                          validationClass));
-                }
 
-                Constructor<?> constructor = clazz.getConstructor();
-                Object instance = constructor.newInstance();
-                if (instance instanceof TopologyValidation) {
-                  return (TopologyValidation) instance;
-                } else if (instance instanceof TopicValidation) {
-                  return (TopicValidation) instance;
-                } else {
-                  throw new IOException("invalid validation type specified " + validationClass);
-                }
-              } catch (Exception ex) {
-                throw new IllegalStateException(
-                    "Failed to load topology validations from class path", ex);
-              }
-            })
-        .collect(Collectors.toList());
-  }
-
-  private Class<?> getValidationClazz(String validationClass) {
-    try {
-      return Class.forName(validationClass);
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
-  }
 }

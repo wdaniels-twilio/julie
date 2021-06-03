@@ -152,6 +152,12 @@ public class JulieOps implements AutoCloseable {
     SchemaRegistryManager schemaRegistryManager =
         new SchemaRegistryManager(schemaRegistryClient, topologyFileOrDir);
 
+    SchemaValidator schemaValidator = new SchemaValidator(schemaRegistryManager, config);
+    var schemaValidationResults = schemaValidator.validate(topology);
+    if (!schemaValidationResults.isEmpty()) {
+      var schemaResultsMessage = String.join("\n", schemaValidationResults);
+      throw new ValidationException(schemaResultsMessage);
+    }
     TopicManager topicManager = new TopicManager(adminClient, schemaRegistryManager, config);
 
     PrincipalManager principalManager = new PrincipalManager(principalProvider, config);
