@@ -117,14 +117,6 @@
       <id>confluent</id>
       <url>https://packages.confluent.io/maven/</url>
     </repository>
-    <repository>
-      <id>twilio.nexus</id>
-      <url>https://nexus.corp.twilio.com/content/groups/public/</url>
-      <releases>
-      </releases>
-      <snapshots>
-      </snapshots>
-    </repository>
   </repositories>
 
   <build>
