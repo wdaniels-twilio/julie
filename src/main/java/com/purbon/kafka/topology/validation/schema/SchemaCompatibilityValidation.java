@@ -19,23 +19,33 @@ public class SchemaCompatibilityValidation implements SchemaValidation {
     private SchemaRegistryManager schemaRegistryManager;
 
     @Override
-    public void valid(final SchemaRegistryManager schemaRegistryManager, Topic topic, TopicSchemas schema) throws ValidationException {
+    public void valid(final SchemaRegistryManager schemaRegistryManager, Topic topic, TopicSchemas schema)
+        throws ValidationException {
+
+        if (null == topic){
+            throw new ValidationException("Schema validation failed due to null topic.");
+        }
+        if (null == schema){
+            throw new ValidationException("Schema validation failed due to null schema.");
+        }
         this.schemaRegistryManager = schemaRegistryManager;
         try {
             var validationResult = false;
-           validationResult = validateSchemaIfExists(schema.getKeySubject(), topic);
-           if (!validationResult){
-               throw new ValidationException(String.format("Schema with KeySubject %s and topic: %s failed "
-                                                         + "compatibility check", schema.getKeySubject(),
-                   topic.getName()));
-           }
-           validationResult = validateSchemaIfExists(schema.getValueSubject(), topic);
-            if (!validationResult){
-                throw new ValidationException(String.format("Schema with valueSubject %s and topic: %s failed "
-                                                            + "compatibility check", schema.getValueSubject(),
+            validationResult = validateSchemaIfExists(schema.getKeySubject(), topic);
+            if (!validationResult) {
+                throw new ValidationException(String.format("Schema with keySubject %s and topic: %s failed "
+                                                            + "compatibility check",
+                    schema.getKeySubject() == null ? "null" :schema.getKeySubject().buildSubjectName(topic),
                     topic.getName()));
             }
-        }catch(IOException ioex){
+            validationResult = validateSchemaIfExists(schema.getValueSubject(), topic);
+            if (!validationResult) {
+                throw new ValidationException(String.format("Schema with valueSubject %s and topic: %s failed "
+                                                            + "compatibility check",
+                    schema.getValueSubject() == null ? "null" :schema.getValueSubject().buildSubjectName(topic),
+                    topic.getName()));
+            }
+        } catch (IOException ioex) {
             LOGGER.debug("IOException while trying to check schema compatibility.", ioex);
             throw new ValidationException(ioex.getMessage());
         }

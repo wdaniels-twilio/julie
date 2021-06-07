@@ -41,6 +41,7 @@ public class Subject {
   public Subject(String schemaFile, String recordType, SubjectKind kind) {
     this.schemaFile = Optional.ofNullable(schemaFile);
     this.recordType = Optional.ofNullable(recordType);
+    this.optionalFormat = Optional.empty();
     this.kind = kind;
   }
 
