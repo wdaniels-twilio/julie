@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -51,9 +50,6 @@ public class CommandLineInterface {
 
   public static final String VERSION_OPTION = "version";
   public static final String VERSION_DESC = "Prints useful version information.";
-
-  public static final String VALIDATE_SCHEMA_OPTION = "validateSchema";
-  public static final String VALIDATE_SCHEMA_DESC = "Only validate schema compatibility, don't register them.";
 
   public static final String APP_NAME = "julie-ops";
 
@@ -123,14 +119,6 @@ public class CommandLineInterface {
             .required(false)
             .build();
 
-    final Option validateSchemaOption =
-        Option.builder()
-        .longOpt(VALIDATE_SCHEMA_OPTION)
-        .hasArg(false)
-        .desc(VALIDATE_SCHEMA_DESC)
-        .required(false)
-        .build();
-
     final Option versionOption =
         Option.builder()
             .longOpt(VERSION_OPTION)
@@ -153,7 +141,6 @@ public class CommandLineInterface {
     options.addOption(dryRunOption);
     options.addOption(quietOption);
     options.addOption(validateOption);
-    options.addOption(validateSchemaOption);
     options.addOption(versionOption);
     options.addOption(helpOption);
 
@@ -187,7 +174,6 @@ public class CommandLineInterface {
     config.put(DRY_RUN_OPTION, String.valueOf(cmd.hasOption(DRY_RUN_OPTION)));
     config.put(QUIET_OPTION, String.valueOf(cmd.hasOption(QUIET_OPTION)));
     config.put(VALIDATE_OPTION, String.valueOf(cmd.hasOption(VALIDATE_OPTION)));
-    config.put(VALIDATE_SCHEMA_OPTION, String.valueOf(cmd.hasOption(VALIDATE_SCHEMA_OPTION)));
     config.put(CLIENT_CONFIG_OPTION, cmd.getOptionValue(CLIENT_CONFIG_OPTION));
     config.put(
         OVERRIDING_CLIENT_CONFIG_OPTION, cmd.getOptionValue(OVERRIDING_CLIENT_CONFIG_OPTION));

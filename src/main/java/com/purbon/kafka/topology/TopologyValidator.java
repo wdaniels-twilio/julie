@@ -14,10 +14,9 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TopologyValidator extends AbstractValidator{
+public class TopologyValidator extends AbstractValidator {
 
   private static final Logger LOGGER = LogManager.getLogger(TopologyValidator.class);
-
 
   public TopologyValidator(final Configuration config) {
     super(config);
@@ -68,6 +67,4 @@ public class TopologyValidator extends AbstractValidator{
         .map(either -> either.getRight().isPresent() ? either.getRight().get().getMessage() : null)
         .collect(Collectors.toList());
   }
-
-
 }

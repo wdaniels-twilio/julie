@@ -6,5 +6,6 @@ import com.purbon.kafka.topology.model.schema.TopicSchemas;
 import com.purbon.kafka.topology.schemas.SchemaRegistryManager;
 
 public interface SchemaValidation extends Validation {
-    void valid(final SchemaRegistryManager schemaRegistryManager, Topic topic, TopicSchemas schema) throws ValidationException;
+  void valid(final SchemaRegistryManager schemaRegistryManager, Topic topic, TopicSchemas schema)
+      throws ValidationException;
 }
